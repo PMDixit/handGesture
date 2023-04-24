@@ -6,8 +6,10 @@ import math
 from model import ResNet9,to_device,get_default_device,predict_image
 import torch
 import torchvision.transforms as tt
+import torchvision.models as models
 import mediapipe as mp
 import os
+import torch.nn as nn
 def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     mp_drawing = mp.solutions.drawing_utils
     mp_selfie_segmentation = mp.solutions.selfie_segmentation
@@ -39,9 +41,11 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
 
     target_num=28
     device = get_default_device()
-    model=ResNet9(3,28)
-    model = to_device(ResNet9(3, target_num), device)
-    model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
+    model=models.efficientnet_b7(pretrained=False)
+    in_features = model._modules['classifier'][-1].in_features
+    model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
+    model = to_device(model, device)
+    model.load_state_dict(torch.load("..\\models\\EfficientNetB7.pth",map_location=torch.device('cpu')))
     model.eval()
     minValue = 50
 

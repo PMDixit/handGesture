@@ -18,6 +18,7 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
 import numpy as np
 import handDetect
 import gtts  
+import os
 from playsound import playsound 
 
 class VideoThread(QThread):
@@ -123,6 +124,16 @@ class Ui_MainWindow(QWidget):
         self.statusbar.setObjectName("statusbar")
         # self.setStatusBar(self.statusbar)
 
+        self.pushButton3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton3.setGeometry(QtCore.QRect(730, 400, 120, 41))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.pushButton3.setFont(font)
+        self.pushButton3.setStyleSheet("color:rgb(85, 85, 255)")
+        self.pushButton3.setObjectName("pushButton")
+        self.pushButton3.setText("<-")
+        self.pushButton3.clicked.connect(self.clearOnceButtonCliked)
+
         self.thread1 = VideoThread(self.text_label1,self.text_label2)
         self.thread1.change_pixmap_signal1.connect(self.update_image1)
         self.thread1.change_pixmap_signal2.connect(self.update_image2)
@@ -133,14 +144,23 @@ class Ui_MainWindow(QWidget):
         self.thread1.stop()
         event.accept()
         self.close()
+        exit()
     
     def clearButtonCliked(self,event):
         self.text_label2.clear()
     
+    def clearOnceButtonCliked(self,event):
+        word=self.text_label2.text()
+        self.text_label2.setText(word[:-1])
+    
     def speechButtonCliked(self,event):
         t1 = gtts.gTTS(self.text_label2.text())
-        t1.save("temp\\welcome.mp3")   
-        playsound("temp\\welcome.mp3") 
+        t1.save("temp\\welcome.mp3") 
+        try: 
+            playsound("temp\\welcome.mp3")
+            os.remove("temp\\welcome.mp3")
+        except:
+            pass
 
     @pyqtSlot(np.ndarray)
     def update_image1(self, cv_img):

@@ -78,13 +78,8 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                     imgWhite[:, wGap:wCal + wGap] = imgResize
 
                     gray = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2GRAY)
-                    blur = cv2.GaussianBlur(gray,(5,5),2)
-                    th3 = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,11,2)
-                    ret, res = cv2.threshold(th3, minValue, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-
-                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-                    res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
-                    res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
+                    blur = cv2.GaussianBlur(gray,(5,5),0)
+                    res=cv2.Canny(blur,100,150)
 
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
@@ -107,22 +102,9 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                     imgWhite[hGap:hCal + hGap, :] = imgResize
 
                     gray = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2GRAY)
-                    blur = cv2.GaussianBlur(gray,(5,5),2)
+                    blur = cv2.GaussianBlur(gray,(5,5),0)
 
-                    th3 = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,11,2)
-                    ret, res = cv2.threshold(th3, minValue, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-
-                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-                    res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
-                    res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
-
-                    # kernel = np.zeros((3,3), np.uint8) 
-                    # # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(res, kernel, iterations=5) 
-
-                    # kernel = np.ones((1,1), np.uint8) 
-                    # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(img_erosion, kernel, iterations=5) 
+                    res=cv2.Canny(blur,100,150)
 
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
                     imgtensor= transform(res)

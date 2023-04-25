@@ -21,7 +21,7 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     in_features = model._modules['fc'].in_features
     model._modules['fc'] = nn.Linear(in_features, target_num, bias=True)
 
-    model= model.to(device)
+    model= model.to_device(model,device)
 
 
     model.load_state_dict(torch.load("..\\models\\IndianVaishnaviWithMorphresnet18.pth",map_location=torch.device('cpu')))

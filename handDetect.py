@@ -41,7 +41,7 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     device = get_default_device()
     model=ResNet9(3,35)
     model = to_device(ResNet9(3, target_num), device)
-    model.load_state_dict(torch.load("..\\models\\indianSignWithMorph1200.pth",map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load("..\\models\\IndianVaishnaviWithMorphresnet9.pth",map_location=torch.device('cpu')))
     model.eval()
     minValue = 50
 

@@ -19,7 +19,7 @@ import mediapipe as mp
 import numpy as np
 from PIL import Image
 
-data_dir="..\\datasets\\indian-sign-language"
+data_dir="..\\datasets\\data"
 #-------------------------------------------------------------------
 stats_avgs=[0.3546225428581238, 0.31263309717178345, 0.3060757517814636]
 stats_stds=[0.21986615657806396, 0.1884787231683731, 0.16998402774333954]

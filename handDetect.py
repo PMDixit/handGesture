@@ -7,6 +7,8 @@ from model import ResNet9,to_device,get_default_device,predict_image
 import torch
 import torchvision.transforms as tt
 import mediapipe as mp
+import torchvision.models as models
+import torch.nn as nn
 import os
 def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     mp_drawing = mp.solutions.drawing_utils
@@ -39,9 +41,14 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
 
     target_num=35
     device = get_default_device()
-    model=ResNet9(3,35)
-    model = to_device(ResNet9(3, target_num), device)
-    model.load_state_dict(torch.load("..\\models\\IndianVaishnaviWithMorphresnet9.pth",map_location=torch.device('cpu')))
+
+    model= models.resnet18(pretrained=False)
+    in_features = model._modules['fc'].in_features
+    model._modules['fc'] = nn.Linear(in_features, target_num, bias=True)
+    model= model.to(device)
+
+
+    model.load_state_dict(torch.load("..\\models\\IndianVaishnaviWithMorphresnet18.pth",map_location=torch.device('cpu')))
     model.eval()
     minValue = 50
 
@@ -116,14 +123,7 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                     res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
 
-                    # kernel = np.zeros((3,3), np.uint8) 
-                    # # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(res, kernel, iterations=5) 
-
-                    # kernel = np.ones((1,1), np.uint8) 
-                    # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(img_erosion, kernel, iterations=5) 
-
+    
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)

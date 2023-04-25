@@ -37,11 +37,11 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
 
     transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
 
-    target_num=28
+    target_num=35
     device = get_default_device()
-    model=ResNet9(3,28)
+    model=ResNet9(3,35)
     model = to_device(ResNet9(3, target_num), device)
-    model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load("..\\models\\indianSignWithMorph1200.pth",map_location=torch.device('cpu')))
     model.eval()
     minValue = 50
 

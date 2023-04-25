@@ -8,6 +8,8 @@ import torch
 import torchvision.transforms as tt
 import mediapipe as mp
 import os
+import torchvision.models as models
+import torch.nn as nn
 def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     mp_drawing = mp.solutions.drawing_utils
     mp_selfie_segmentation = mp.solutions.selfie_segmentation
@@ -37,11 +39,12 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
 
     transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
 
-    target_num=28
+    target_num=35
     device = get_default_device()
-    model=ResNet9(3,28)
-    model = to_device(ResNet9(3, target_num), device)
-    model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
+    model=ResNet9(3,35)
+    model = to_device(model, device)
+
+    model.load_state_dict(torch.load("..\\models\\IndianVaishnaviWithMorphresnet9.pth",map_location=torch.device('cpu')))
     model.eval()
     minValue = 50
 

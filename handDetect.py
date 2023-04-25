@@ -3,7 +3,7 @@ from cvzone.HandTrackingModule import HandDetector
 from cvzone.ClassificationModule import Classifier
 import numpy as np
 import math
-from model import ResNet9,to_device,get_default_device,predict_image
+from model import to_device,get_default_device,predict_image
 import torch
 import torchvision.transforms as tt
 import mediapipe as mp
@@ -11,32 +11,7 @@ import torchvision.models as models
 import torch.nn as nn
 import os
 def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
-    mp_drawing = mp.solutions.drawing_utils
-    mp_selfie_segmentation = mp.solutions.selfie_segmentation
     pred=[]
-
-
-    # def SegmentNorm(img):
-    #     BG_COLOR = (0,0,0)
-    #     with mp_selfie_segmentation.SelfieSegmentation(
-    #         model_selection=0) as selfie_segmentation:
-    #         image = img
-    #         results = selfie_segmentation.process(image)
-    #         condition = np.stack((results.segmentation_mask,) * 3, axis=-1) > 0.2
-    #         bg_image = np.zeros(image.shape, dtype=np.uint8)
-    #         bg_image[:] = BG_COLOR
-    #         imgbremoved= np.where(condition, image, bg_image)
-
-    #         transform = tt.ToTensor()
-    #         imgbremoved= transform(imgbremoved)
-
-    #         mean=imgbremoved.mean([1,2])
-    #         std=imgbremoved.std([1,2])
-    #         stats=(mean,std)
-    #         transform = tt.Compose([tt.Normalize(*stats)])
-    #         imgbremoved=transform(imgbremoved)
-    #     return imgbremoved
-
     transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
 
     target_num=35
@@ -45,6 +20,7 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     model= models.resnet18(pretrained=False)
     in_features = model._modules['fc'].in_features
     model._modules['fc'] = nn.Linear(in_features, target_num, bias=True)
+
     model= model.to(device)
 
 
@@ -59,7 +35,7 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     imgSize = 400
     while run_flag:
         try: 
-            success, img = cap.read()
+            _, img = cap.read()
             imgOutput = img.copy()
             hands, img = detector.findHands(img)
             if hands:
@@ -72,15 +48,12 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                 imgWhite = np.ones((imgSize, imgSize, 3), np.uint8)
                 imgCrop = imgOutput[y - offset:y + h + offset, x - offset-50:x + w + offset]
 
-                imgCropShape = imgCrop.shape
-
                 aspectRatio = h / w
 
                 if aspectRatio > 1:
                     k = imgSize / h
                     wCal = math.ceil(k * w)
                     imgResize = cv2.resize(imgCrop, (wCal, imgSize))
-                    imgResizeShape = imgResize.shape
                     wGap = math.ceil((imgSize - wCal) / 2)
                     imgWhite[:, wGap:wCal + wGap] = imgResize
 
@@ -93,6 +66,8 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                     res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
 
+
+                    res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
                     tl1.setText(predicted)
@@ -135,9 +110,6 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                             pred.clear()
                         else:
                             pred.clear()
-                    
-
-                # crop= imgseg.permute(1,2,0).cpu().detach().numpy()
                     
                 change_pixmap_signal2.emit(res)
                 cv2.rectangle(imgOutput, (x-offset-50, y-offset),

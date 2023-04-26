@@ -19,7 +19,7 @@ import numpy as np
 import handDetect
 import gtts  
 from playsound import playsound 
-
+import os
 class VideoThread(QThread):
     change_pixmap_signal1 = pyqtSignal(np.ndarray)
     change_pixmap_signal2 = pyqtSignal(np.ndarray)
@@ -119,6 +119,17 @@ class Ui_MainWindow(QWidget):
         # self.menubar.setGeometry(QtCore.QRect(0, 0, 1034, 43))
         # self.menubar.setObjectName("menubar")
         #self.setMenuBar(self.menubar)
+
+        self.pushButton3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton3.setGeometry(QtCore.QRect(730, 400, 120, 41))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.pushButton3.setFont(font)
+        self.pushButton3.setStyleSheet("color:rgb(85, 85, 255)")
+        self.pushButton3.setObjectName("pushButton")
+        self.pushButton3.setText("<-")
+        self.pushButton3.clicked.connect(self.clearOnceButtonCliked)
+
         self.statusbar = QtWidgets.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         # self.setStatusBar(self.statusbar)
@@ -141,6 +152,10 @@ class Ui_MainWindow(QWidget):
         t1 = gtts.gTTS(self.text_label2.text())
         t1.save("temp\\welcome.mp3")   
         playsound("temp\\welcome.mp3") 
+    
+    def clearOnceButtonCliked(self,event):
+        word=self.text_label2.text()
+        self.text_label2.setText(word[:-1])
 
     @pyqtSlot(np.ndarray)
     def update_image1(self, cv_img):
@@ -152,6 +167,15 @@ class Ui_MainWindow(QWidget):
         """Updates the image_label with a new opencv image"""
         qt_img = self.convert_cv_qt(cv_img,351,381)
         self.image_label2.setPixmap(qt_img)
+
+    def speechButtonCliked(self,event):
+        t1 = gtts.gTTS(self.text_label2.text())
+        t1.save("temp\\welcome.mp3") 
+        try: 
+            playsound("temp\\welcome.mp3")
+            os.remove("temp\\welcome.mp3")
+        except:
+            pass
     
     def convert_cv_qt(self, cv_img,disply_width,display_height):
         """Convert from an opencv image to QPixmap"""

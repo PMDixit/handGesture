@@ -111,24 +111,19 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                     imgWhite[hGap:hCal + hGap, :] = imgResize
 
                     gray = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2GRAY)
-                    blur = cv2.GaussianBlur(gray,(5,5),2)
+                    res= cv2.cvtColor(imgWhite, cv2.COLOR_GRAY2BGR)
+                    res= cv2.cvtColor(imgWhite, cv2.COLOR_BGR2RGB)
+                    Z = res.reshape((-1,3))
+                    # convert to np.float32
+                    Z = np.float32(Z)
+                    # define criteria, number of clusters(K) and apply kmeans()
+                    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+                    K = 2
+                    ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+                    center = np.uint8(center)
+                    res = center[label.flatten()]
+                    res = res.reshape((imgWhite.shape))
 
-                    th3 = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,11,2)
-                    ret, res = cv2.threshold(th3, minValue, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-
-                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-                    res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
-                    res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
-
-                    # kernel = np.zeros((3,3), np.uint8) 
-                    # # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(res, kernel, iterations=5) 
-
-                    # kernel = np.ones((1,1), np.uint8) 
-                    # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(img_erosion, kernel, iterations=5) 
-
-                    res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
                     tl1.setText(predicted)
@@ -150,4 +145,4 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                 change_pixmap_signal1.emit(imgOutput)
             cv2.waitKey(1)
         except: 
-            pass
+            print("Exception")

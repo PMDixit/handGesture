@@ -37,15 +37,15 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
     #         imgbremoved=transform(imgbremoved)
     #     return imgbremoved
 
-    transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
+    transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(400,400))])
 
     target_num=28
     device = get_default_device()
-    model=models.efficientnet_b7(pretrained=False)
-    in_features = model._modules['classifier'][-1].in_features
-    model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
+    model = models.resnet18(pretrained=False)
+    in_features = model._modules['fc'].in_features
+    model._modules['fc'] = nn.Linear(in_features, target_num, bias=True)
     model = to_device(model, device)
-    model.load_state_dict(torch.load("..\\models\\EfficientNetB7.pth",map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load("..\\models\\resnet18400X400.pth",map_location=torch.device('cpu')))
     model.eval()
     minValue = 50
 

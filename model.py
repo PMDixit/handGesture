@@ -184,8 +184,8 @@ def predict_image(img, model):
     # Convert to a batch of 1
     xb = to_device(img.unsqueeze(0), device)
     # Get predictions from model
-    yb = model(xb)
+    yb = model(xb).squeeze(0).softmax(0)
     # Pick index with highest probability
-    _, preds  = torch.max(yb, dim=1)
+    preds  = yb.argmax().item()
     # Retrieve the class label
-    return train_data.classes[preds[0].item()]
+    return train_data.classes[preds]

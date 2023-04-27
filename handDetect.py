@@ -3,51 +3,60 @@ from cvzone.HandTrackingModule import HandDetector
 from cvzone.ClassificationModule import Classifier
 import numpy as np
 import math
-from model import ResNet9,to_device,get_default_device,predict_image
+from model import ResNet9,to_device,get_default_device,predict_image,selectModel
 import torch
 import torchvision.transforms as tt
 import mediapipe as mp
 import os
-def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
-    mp_drawing = mp.solutions.drawing_utils
-    mp_selfie_segmentation = mp.solutions.selfie_segmentation
-    pred=[]
+run_flag = True
+x,y,w,h=275,30,250,250
+fixed=False
+def setFlag():
+    global run_flag
+    run_flag=False
 
+def move(u=False,d=False,l=False,r=False,auto=False):
+    global x,y,fixed
+    move=10
+    if u:
+        y=y-move
+    if d:
+        y=y+move
+    if l:
+        x=x-move
+    if r:
+        x=x+move
+    if auto:
+        fixed= not fixed
 
-    # def SegmentNorm(img):
-    #     BG_COLOR = (0,0,0)
-    #     with mp_selfie_segmentation.SelfieSegmentation(
-    #         model_selection=0) as selfie_segmentation:
-    #         image = img
-    #         results = selfie_segmentation.process(image)
-    #         condition = np.stack((results.segmentation_mask,) * 3, axis=-1) > 0.2
-    #         bg_image = np.zeros(image.shape, dtype=np.uint8)
-    #         bg_image[:] = BG_COLOR
-    #         imgbremoved= np.where(condition, image, bg_image)
-
-    #         transform = tt.ToTensor()
-    #         imgbremoved= transform(imgbremoved)
-
-    #         mean=imgbremoved.mean([1,2])
-    #         std=imgbremoved.std([1,2])
-    #         stats=(mean,std)
-    #         transform = tt.Compose([tt.Normalize(*stats)])
-    #         imgbremoved=transform(imgbremoved)
-    #     return imgbremoved
-
-    transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
-
+def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
+    global x,y,w,h
+    global run_flag
+    global fixed
+    run_flag=True
+    selectModel(mod)
     target_num=28
     device = get_default_device()
-    model=ResNet9(3,28)
+    model=ResNet9(3,target_num)
     model = to_device(ResNet9(3, target_num), device)
-    model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
-    model.eval()
-    minValue = 50
+    if mod=="Indian":
+        target_num=36
+        device = get_default_device()
+        model=ResNet9(3,target_num)
+        model = to_device(ResNet9(3, target_num), device)
+        model.load_state_dict(torch.load("..\\models\\resnet9Indian50img.pth",map_location=torch.device('cpu')))
+        model.eval()
+    else:
+        model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
+        model.eval()
 
+    pred=[]
+    transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
+    minValue = 50
     cap = cv2.VideoCapture(0)
     detector = HandDetector(maxHands=1)
-
+ 
+    fixed=True
     offset=20
     imgSize = 400
     while run_flag:
@@ -57,7 +66,10 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
             hands, img = detector.findHands(img)
             if hands:
                 hand = hands[0]
-                x, y, w, h = hand['bbox']
+                
+                if not fixed:
+                    x, y, w, h = hand['bbox']
+
                 if(w<250):
                     w=250
                 if(h<250):
@@ -115,16 +127,8 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
                     res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
-
-                    # kernel = np.zeros((3,3), np.uint8) 
-                    # # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(res, kernel, iterations=5) 
-
-                    # kernel = np.ones((1,1), np.uint8) 
-                    # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(img_erosion, kernel, iterations=5) 
-
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
+
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
                     tl1.setText(predicted)
@@ -135,9 +139,6 @@ def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
                             pred.clear()
                         else:
                             pred.clear()
-                    
-
-                # crop= imgseg.permute(1,2,0).cpu().detach().numpy()
                     
                 change_pixmap_signal2.emit(res)
                 cv2.rectangle(imgOutput, (x-offset-50, y-offset),

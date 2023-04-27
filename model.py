@@ -19,55 +19,56 @@ import mediapipe as mp
 import numpy as np
 from PIL import Image
 
-data_dir="..\\datasets\\segmentedImage"
+def selectModel(model):
+    global data_dir,target_num
+    if(model=="Indian"):
+        data_dir="..\\datasets\\data1\\train"
+        target_num=36
+    if(model=="American"):
+        data_dir="..\\datasets\\segmentedImage"
+        target_num=28
+    TrainClass()
+    
 #-------------------------------------------------------------------
-stats_avgs=[0.3546225428581238, 0.31263309717178345, 0.3060757517814636]
-stats_stds=[0.21986615657806396, 0.1884787231683731, 0.16998402774333954]
-target_num=28
-#-------------------------------------------------------------------
+def TrainClass():
+    train_tfms = tt.Compose([
 
-stats = (stats_avgs, stats_stds)
-train_tfms = tt.Compose([
-                         tt.RandomHorizontalFlip(), 
+                            tt.ToTensor(), 
 
-                         tt.ToTensor(), 
+                            ])
 
-                         tt.Normalize(*stats,inplace=True)])
+    valid_tfms = tt.Compose([tt.ToTensor()])
 
-valid_tfms = tt.Compose([tt.ToTensor(), tt.Normalize(*stats)])
+    global train_data
+    train_data = ImageFolder(data_dir, transform=train_tfms)
+    valid_data= ImageFolder(data_dir, transform=valid_tfms)
+    test_data = ImageFolder(data_dir, transform=valid_tfms)
 
-train_data = ImageFolder(data_dir, transform=train_tfms)
-valid_data = ImageFolder(data_dir, transform=valid_tfms)
-test_data = ImageFolder(data_dir, transform=valid_tfms)
-
-#-------------------------------------------------------------------
-
-num_train = len(train_data)
-indices = list(range(num_train))
-np.random.seed(42)
-np.random.shuffle(indices)
-valid_size = 0.15
-test_size = 0.10
-val_split = int(np.floor(valid_size * num_train))
-test_split = int(np.floor(test_size * num_train))
-valid_idx, test_idx, train_idx = indices[:val_split], indices[val_split:val_split+test_split], indices[val_split+test_split:]
-#-------------------------------------------------------------------
-
-batch_size = 250
-
-#------------------------------------------------------------------
-
-train_sampler = SubsetRandomSampler(train_idx)
-valid_sampler = SubsetRandomSampler(valid_idx)
-
-
-
-train_dl = torch.utils.data.DataLoader(train_data, batch_size=batch_size, 
-    sampler=train_sampler, num_workers=2, pin_memory=True)
-valid_dl = torch.utils.data.DataLoader(valid_data, batch_size=batch_size,
-    sampler=valid_sampler, num_workers=2, pin_memory=True)
-
-#------------------------------------------------------------------
+    #-------------------------------------------------------------------
+    num_train = len(train_data)
+    indices = list(range(num_train))
+    np.random.seed(42)
+    np.random.shuffle(indices)
+    valid_size = 0.15
+    test_size = 0.10
+    val_split = int(np.floor(valid_size * num_train))
+    test_split = int(np.floor(test_size * num_train))
+    valid_idx, test_idx, train_idx = indices[:val_split], indices[val_split:val_split+test_split], indices[val_split+test_split:]
+    #-------------------------------------------------------------------
+    batch_size = 250
+    #------------------------------------------------------------------
+    train_sampler = SubsetRandomSampler(train_idx)
+    valid_sampler = SubsetRandomSampler(valid_idx)
+    train_dl = torch.utils.data.DataLoader(train_data, batch_size=batch_size, 
+        sampler=train_sampler, num_workers=2, pin_memory=True)
+    valid_dl = torch.utils.data.DataLoader(valid_data, batch_size=batch_size,
+        sampler=valid_sampler, num_workers=2, pin_memory=True)
+    #--------------------------------------------------------------------
+    global device 
+    device= get_default_device()
+    #--------------------------------------------------------------------
+    train_dl = DeviceDataLoader(train_dl, device)
+    valid_dl = DeviceDataLoader(valid_dl, device)
 #for computing check
 def get_default_device():
     """Pick GPU if available, else CPU"""
@@ -98,17 +99,7 @@ class DeviceDataLoader():
         """Number of batches"""
         return len(self.dl)
 
-#-------------------------------------------------------------------
-
-device = get_default_device()
-device
-
-#--------------------------------------------------------------------
-train_dl = DeviceDataLoader(train_dl, device)
-valid_dl = DeviceDataLoader(valid_dl, device)
-
 #---------------------------------------------------------------------
-
 def accuracy(outputs, labels):
     _, preds = torch.max(outputs, dim=1)
     return torch.tensor(torch.sum(preds == labels).item() / len(preds))
@@ -139,7 +130,6 @@ class ImageClassificationBase(nn.Module):
             epoch, result['lrs'][-1], result['train_loss'], result['val_loss'], result['val_acc']))
         
 #----------------------------------------------------------------------------------------------------------
-
 def conv_block(in_channels, out_channels, pool=False):
     layers = [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1), 
               nn.BatchNorm2d(out_channels), 
@@ -175,11 +165,6 @@ class ResNet9(ImageClassificationBase):
         out = self.classifier(out)
         return out
 #------------------------------------------------------------------------------------------------
-
-model = to_device(ResNet9(3, target_num), device)
-
-#-------------------------------------------------------------------------------
-
 def predict_image(img, model):
     # Convert to a batch of 1
     xb = to_device(img.unsqueeze(0), device)

@@ -26,28 +26,33 @@ class VideoThread(QThread):
 
     def __init__(self,tl1,tl2):
         super().__init__()
-        self._run_flag = True
+        self.model="Indian"
+        self.run_flag=True
         self.tl1=tl1
         self.tl2=tl2
 
     def run(self):
-        while self._run_flag:
-            handDetect.fun(self.change_pixmap_signal1,self.change_pixmap_signal2,self._run_flag,self.tl1,self.tl2)
+        while self.run_flag:
+            handDetect.detect(self.change_pixmap_signal1,self.change_pixmap_signal2,self.tl1,self.tl2,mod=self.model)
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""
-        self._run_flag = False
+        self.run_flag=True
         self.wait()
+        self.terminate()
+    
+    def changeModel(self,model):
+        self.model=model
+        handDetect.setFlag()
 
 
 class Ui_MainWindow(QWidget):
-        
-    
     def __init__(self):
         super().__init__()
         self.setObjectName("self")
         self.setWindowTitle("Hand Gesture Recognition")
-        self.resize(1034, 738)
+        self.resize(1024, 732)
+        self.styleSheet("background-color:black")
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
@@ -57,12 +62,15 @@ class Ui_MainWindow(QWidget):
         self.centralwidget.setObjectName("centralwidget")
 
         self.image_label1 = QtWidgets.QLabel(self.centralwidget)
-        self.image_label1.setGeometry(QtCore.QRect(10, 10, 571, 371))
+        self.image_label1.setGeometry(QtCore.QRect(10, 20, 600, 400))
         self.image_label1.setObjectName("image_label1")
+        self.image_label1.setStyleSheet("border: 3px solid black; padding-left:45px")
 
         self.image_label2 = QtWidgets.QLabel(self.centralwidget)
-        self.image_label2.setGeometry(QtCore.QRect(620, 10, 351, 381))
+        self.image_label2.setGeometry(QtCore.QRect(615, 20, 400, 400))
         self.image_label2.setObjectName("image_label2")
+        self.image_label2.setStyleSheet("border: 3px solid black;padding-left:20px")
+        #----------------------------------------------------------------------------------------------
 
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(170, 440, 151, 51))
@@ -83,6 +91,8 @@ class Ui_MainWindow(QWidget):
         self.label_2.setGeometry(QtCore.QRect(720, 440, 151, 51))
         self.label_2.setText("Sentence:")
 
+        
+
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
@@ -91,6 +101,61 @@ class Ui_MainWindow(QWidget):
         self.label_2.setFont(font)
         self.label_2.setTextFormat(QtCore.Qt.AutoText)
         self.label_2.setObjectName("label_2")
+        #----------------------------------------------------------------------------------------------
+
+
+        self.upBtn = QtWidgets.QPushButton(self.centralwidget)
+        self.upBtn.setGeometry(QtCore.QRect(510, 449, 25, 50))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.upBtn.setFont(font)
+        self.upBtn.setStyleSheet("color:rgb(85, 85, 255)")
+        self.upBtn.setObjectName("pushButton")
+        self.upBtn.setText("^")
+        self.upBtn.clicked.connect(self.up)
+
+
+        self.downBtn = QtWidgets.QPushButton(self.centralwidget)
+        self.downBtn.setGeometry(QtCore.QRect(510, 538, 25, 50))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.downBtn.setFont(font)
+        self.downBtn.setStyleSheet("color:rgb(85, 85, 255)")
+        self.downBtn.setObjectName("pushButton")
+        self.downBtn.setText("v")
+        self.downBtn.clicked.connect(self.down)
+
+        self.leftBtn = QtWidgets.QPushButton(self.centralwidget)
+        self.leftBtn.setGeometry(QtCore.QRect(450, 506, 50, 25))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.leftBtn.setFont(font)
+        self.leftBtn.setStyleSheet("color:rgb(85, 85, 255)")
+        self.leftBtn.setObjectName("pushButton")
+        self.leftBtn.setText("<")
+        self.leftBtn.clicked.connect(self.left)
+
+        self.rightBtn = QtWidgets.QPushButton(self.centralwidget)
+        self.rightBtn.setGeometry(QtCore.QRect(544, 506, 50, 25))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.rightBtn.setFont(font)
+        self.rightBtn.setStyleSheet("color:rgb(85, 85, 255)")
+        self.rightBtn.setObjectName("pushButton")
+        self.rightBtn.setText(">")
+        self.rightBtn.clicked.connect(self.right)
+
+
+        self.autobtn = QtWidgets.QPushButton(self.centralwidget)
+        self.autobtn.setGeometry(QtCore.QRect(510, 507, 25, 25))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.autobtn.setFont(font)
+        self.autobtn.setStyleSheet("color:rgb(85, 85, 255)")
+        self.autobtn.setObjectName("pushButton")
+        self.autobtn.setText("A")
+        self.autobtn.clicked.connect(self.auto)
+        #----------------------------------------------------------------------------------------------
 
         self.text_label2 = QtWidgets.QLabel(self.centralwidget)
         self.text_label2.setGeometry(QtCore.QRect(760, 500, 151, 51))
@@ -120,8 +185,19 @@ class Ui_MainWindow(QWidget):
         # self.menubar.setObjectName("menubar")
         #self.setMenuBar(self.menubar)
 
+        self.changemodelLabel = QtWidgets.QPushButton(self.centralwidget)
+        self.changemodelLabel.setGeometry(QtCore.QRect(150, 600, 150, 40))
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.changemodelLabel.setFont(font)
+        self.changemodelLabel.setStyleSheet("color:rgb(85, 85, 255)")
+        self.changemodelLabel.setObjectName("pushButton")
+        self.model="American"
+        self.changemodelLabel.setText("American")
+        self.changemodelLabel.clicked.connect(self.changeModelCliked)
+
         self.pushButton3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton3.setGeometry(QtCore.QRect(730, 400, 120, 41))
+        self.pushButton3.setGeometry(QtCore.QRect(730, 600, 120, 41))
         font = QtGui.QFont()
         font.setPointSize(14)
         self.pushButton3.setFont(font)
@@ -139,6 +215,17 @@ class Ui_MainWindow(QWidget):
         self.thread1.change_pixmap_signal2.connect(self.update_image2)
         self.thread1.start()
         QtCore.QMetaObject.connectSlotsByName(self)
+
+    def up(self,event):
+        handDetect.move(u=True)
+    def down(self,event):
+        handDetect.move(d=True)
+    def left(self,event):
+        handDetect.move(l=True)
+    def right(self,event):
+        handDetect.move(r=True)
+    def auto(self,event):
+        handDetect.move(auto=True)
     
     def closeEvent(self, event):
         self.thread1.stop()
@@ -147,7 +234,17 @@ class Ui_MainWindow(QWidget):
     
     def clearButtonCliked(self,event):
         self.text_label2.clear()
-    
+
+    def changeModelCliked(self,event):
+        if self.model=="American":
+            self.thread1.changeModel(self.changemodelLabel.text())
+            self.changemodelLabel.setText("Indian")
+            self.model="Indian"
+        else:
+            self.thread1.changeModel(self.changemodelLabel.text())
+            self.changemodelLabel.setText("American")
+            self.model="American"
+
     def speechButtonCliked(self,event):
         t1 = gtts.gTTS(self.text_label2.text())
         t1.save("temp\\welcome.mp3")   

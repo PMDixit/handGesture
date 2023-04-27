@@ -52,7 +52,6 @@ class Ui_MainWindow(QWidget):
         self.setObjectName("self")
         self.setWindowTitle("Hand Gesture Recognition")
         self.resize(1024, 732)
-        self.styleSheet("background-color:black")
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
@@ -228,9 +227,12 @@ class Ui_MainWindow(QWidget):
         handDetect.move(auto=True)
     
     def closeEvent(self, event):
-        self.thread1.stop()
-        event.accept()
-        self.close()
+        reply = QMessageBox.question(self, 'Hand Gesture Recognition', 'Are you sure you want to close the window?',
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply==QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
     
     def clearButtonCliked(self,event):
         self.text_label2.clear()

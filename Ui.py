@@ -83,23 +83,27 @@ class Ui_MainWindow(QWidget):
         self.label.setText("Predicted:")
 
         self.text_label1 = QtWidgets.QLabel(self.centralwidget)
-        self.text_label1.setGeometry(QtCore.QRect(220, 500, 151, 51))
+        self.text_label1.setGeometry(QtCore.QRect(170, 500, 151, 51))
         self.text_label1.setObjectName("text_label1")
+        self.text_label1.setStyleSheet("border: 3px solid black;")
+        self.text_label1.setAlignment(QtCore.Qt.AlignCenter)
 
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(720, 440, 151, 51))
         self.label_2.setText("Sentence:")
-
-        
-
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
         font.setWeight(75)
-
         self.label_2.setFont(font)
         self.label_2.setTextFormat(QtCore.Qt.AutoText)
         self.label_2.setObjectName("label_2")
+
+        self.text_label2 = QtWidgets.QLabel(self.centralwidget)
+        self.text_label2.setGeometry(QtCore.QRect(720, 500, 151, 51))
+        self.text_label2.setObjectName("text_label2")
+        self.text_label2.setStyleSheet("border: 3px solid black;")
+        self.text_label2.setAlignment(QtCore.Qt.AlignCenter)
         #----------------------------------------------------------------------------------------------
 
 
@@ -156,9 +160,7 @@ class Ui_MainWindow(QWidget):
         self.autobtn.clicked.connect(self.auto)
         #----------------------------------------------------------------------------------------------
 
-        self.text_label2 = QtWidgets.QLabel(self.centralwidget)
-        self.text_label2.setGeometry(QtCore.QRect(760, 500, 151, 51))
-        self.text_label2.setObjectName("text_label2")
+        
 
         self.pushButton1 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton1.setGeometry(QtCore.QRect(350, 600, 151, 41))

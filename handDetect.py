@@ -8,6 +8,8 @@ import torch
 import torchvision.transforms as tt
 import mediapipe as mp
 import os
+from PyQt5.QtWidgets import *
+
 run_flag = True
 x,y,w,h=275,30,250,250
 fixed=False
@@ -98,6 +100,10 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
 
+                    if(mod=="Indian"):
+                        kernel = np.ones((5,5),np.uint8)
+                        res = cv2.erode(res,kernel,iterations = 1)
+
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
                     tl1.setText(predicted)
@@ -129,13 +135,24 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
 
+                    if(mod=="Indian"):
+                        kernel = np.ones((5,5),np.uint8)
+                        res = cv2.erode(res,kernel,iterations = 1)
+
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
                     tl1.setText(predicted)
                     pred.append(predicted)
-                    if len(pred)>=50:
-                        if pred.count(max(set(pred), key = pred.count))>35:
-                            tl2.setText(tl2.text()+max(set(pred), key = pred.count))
+
+                    if len(pred)>=20:
+                        if pred.count(max(set(pred), key = pred.count))>18:
+                            if max(set(pred), key = pred.count) =="Nothing":
+                                tl1.setText("Place Hand in box")
+                            elif max(set(pred), key = pred.count) =="Space":
+                                tl2.setText(tl2.text()+" ")
+                            else:
+                                tl2.setText(tl2.text()+max(set(pred), key = pred.count))
+                                
                             pred.clear()
                         else:
                             pred.clear()

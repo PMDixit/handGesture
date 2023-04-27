@@ -52,7 +52,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
 
     pred=[]
     transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
-    minValue = 50
+    minValue = 70
     cap = cv2.VideoCapture(0)
     detector = HandDetector(maxHands=1)
  

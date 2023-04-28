@@ -88,6 +88,7 @@ class Ui_MainWindow(QWidget):
         self.text_label1.setStyleSheet("border: 3px solid black;")
         self.text_label1.setAlignment(QtCore.Qt.AlignCenter)
 
+
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(720, 440, 151, 51))
         self.label_2.setText("Sentence:")
@@ -98,12 +99,13 @@ class Ui_MainWindow(QWidget):
         self.label_2.setFont(font)
         self.label_2.setTextFormat(QtCore.Qt.AutoText)
         self.label_2.setObjectName("label_2")
-
+        
         self.text_label2 = QtWidgets.QLabel(self.centralwidget)
         self.text_label2.setGeometry(QtCore.QRect(720, 500, 151, 51))
         self.text_label2.setObjectName("text_label2")
         self.text_label2.setStyleSheet("border: 3px solid black;")
         self.text_label2.setAlignment(QtCore.Qt.AlignCenter)
+
         #----------------------------------------------------------------------------------------------
 
 

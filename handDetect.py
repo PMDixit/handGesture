@@ -100,9 +100,9 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
 
-                    if(mod=="Indian"):
-                        kernel = np.ones((5,5),np.uint8)
-                        res = cv2.erode(res,kernel,iterations = 1)
+                    # if(mod=="Indian"):
+                    #     kernel = np.ones((5,5),np.uint8)
+                    #     res = cv2.erode(res,kernel,iterations = 1)
 
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
@@ -135,9 +135,9 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
 
-                    if(mod=="Indian"):
-                        kernel = np.ones((5,5),np.uint8)
-                        res = cv2.erode(res,kernel,iterations = 1)
+                    # if(mod=="Indian"):
+                    #     kernel = np.ones((5,5),np.uint8)
+                    #     res = cv2.erode(res,kernel,iterations = 1)
 
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)

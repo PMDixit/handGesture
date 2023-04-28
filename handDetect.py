@@ -46,7 +46,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
         device = get_default_device()
         model=ResNet9(3,target_num)
         model = to_device(ResNet9(3, target_num), device)
-        model.load_state_dict(torch.load("..\\models\\resnet9Indian50img.pth",map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load("..\\models\\resnet9Indian70img.pth",map_location=torch.device('cpu')))
         model.eval()
     else:
         model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
@@ -135,9 +135,9 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
 
-                    # if(mod=="Indian"):
-                    #     kernel = np.ones((5,5),np.uint8)
-                    #     res = cv2.erode(res,kernel,iterations = 1)
+                    if(mod=="Indian"):
+                        kernel = np.ones((5,5),np.uint8)
+                        res = cv2.erode(res,kernel,iterations = 1)
 
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)

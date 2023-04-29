@@ -9,7 +9,8 @@ import torchvision.transforms as tt
 import mediapipe as mp
 import os
 from PyQt5.QtWidgets import *
-
+import torchvision.models as models
+import torch.nn as nn
 run_flag = True
 x,y,w,h=275,30,250,250
 fixed=False
@@ -44,9 +45,11 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     if mod=="Indian":
         target_num=36
         device = get_default_device()
-        model=ResNet9(3,target_num)
-        model = to_device(ResNet9(3, target_num), device)
-        model.load_state_dict(torch.load("..\\models\\resnet9Indian70img.pth",map_location=torch.device('cpu')))
+        model = models.mobilenet_v2()
+        in_features = model._modules['classifier'][-1].in_features
+        model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
+        model = to_device(model, device)
+        model.load_state_dict(torch.load("..\\models\\MobileNet_V2Indian70img.pth",map_location=torch.device('cpu')))
         model.eval()
     else:
         model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
@@ -123,8 +126,18 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     imgResizeShape = imgResize.shape
                     hGap = math.ceil((imgSize - hCal) / 2)
                     imgWhite[hGap:hCal + hGap, :] = imgResize
+                    img=imgWhite
+                    #img=cv2.addWeighted(img, 1,img,2,-10)
+                    img=np.float32(img)
+                    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.85) #criteria
+                    k = 50 # Choosing number of cluster
+                    retval, labels, centers = cv2.kmeans(img, k, None, criteria, 4, cv2.KMEANS_RANDOM_CENTERS) 
 
-                    gray = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2GRAY)
+                    centers = np.uint8(centers) # convert data into 8-bit values 
+                    segmented_data = centers[labels.flatten()] # Mapping labels to center points( RGB Value)
+                    segmented_image = segmented_data.reshape((img.shape))
+
+                    gray = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2GRAY)
                     blur = cv2.GaussianBlur(gray,(5,5),2)
 
                     th3 = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,11,2)

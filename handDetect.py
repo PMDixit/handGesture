@@ -40,8 +40,10 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     selectModel(mod)
     target_num=28
     device = get_default_device()
-    model=ResNet9(3,target_num)
-    model = to_device(ResNet9(3, target_num), device)
+    model = models.mobilenet_v2()
+    in_features = model._modules['classifier'][-1].in_features
+    model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
+    model = to_device(model, device)
     if mod=="Indian":
         target_num=36
         device = get_default_device()
@@ -52,7 +54,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
         model.load_state_dict(torch.load("..\\models\\MobileNet_V2Indian70img.pth",map_location=torch.device('cpu')))
         model.eval()
     else:
-        model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load("..\\models\\MobileNet_V2ASLEroded.pth",map_location=torch.device('cpu')))
         model.eval()
 
     pred=[]
@@ -131,12 +133,12 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     img=np.float32(img)
                     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.85) #criteria
                     k = 50 # Choosing number of cluster
-                    retval, labels, centers = cv2.kmeans(img, k, None, criteria, 4, cv2.KMEANS_RANDOM_CENTERS) 
+                    retval, labels, centers = cv2.kmeans(img, k, None, criteria, 3, cv2.KMEANS_RANDOM_CENTERS) 
 
                     centers = np.uint8(centers) # convert data into 8-bit values 
                     segmented_data = centers[labels.flatten()] # Mapping labels to center points( RGB Value)
                     segmented_image = segmented_data.reshape((img.shape))
-
+ 
                     gray = cv2.cvtColor(segmented_image, cv2.COLOR_BGR2GRAY)
                     blur = cv2.GaussianBlur(gray,(5,5),2)
 
@@ -148,9 +150,10 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
 
-                    if(mod=="Indian"):
-                        kernel = np.ones((5,5),np.uint8)
-                        res = cv2.erode(res,kernel,iterations = 1)
+                    
+                    kernel = np.ones((3,3),np.uint8)
+                    #res=cv2.dilate(res,kernel,iterations=1)
+                    res = cv2.erode(res,kernel,iterations =1)
 
                     imgtensor= transform(res)
                     predicted=predict_image(imgtensor, model)
@@ -176,5 +179,5 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
             
                 change_pixmap_signal1.emit(imgOutput)
             cv2.waitKey(1)
-        except: 
-            pass
+        except Exception as e: 
+            print(e)

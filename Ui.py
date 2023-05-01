@@ -71,6 +71,69 @@ class Ui_MainWindow(QWidget):
         self.image_label2.setStyleSheet("border: 3px solid black;padding-left:20px")
         #----------------------------------------------------------------------------------------------
 
+
+        self.slidererode = QtWidgets.QSlider(self.centralwidget)
+        self.slidererode.setFocusPolicy(Qt.StrongFocus)
+        self.slidererode.setGeometry(QtCore.QRect(340,680,100,50))
+        self.slidererode.setOrientation(QtCore.Qt.Horizontal)
+        self.slidererode.setTickPosition(QSlider.TicksBothSides)
+        self.slidererode.setTickInterval(20)
+        self.slidererode.setSingleStep(5)
+        self.slidererode.valueChanged.connect(self.changeErode)
+
+        self.labelerode = QtWidgets.QLabel(self.centralwidget)
+        self.labelerode.setGeometry(QtCore.QRect(340, 645, 90, 30))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setWeight(40)
+        self.labelerode.setFont(font)
+        self.labelerode.setTextFormat(QtCore.Qt.AutoText)
+        self.labelerode.setObjectName("label")
+        self.labelerode.setText("Erode:")
+
+        self.sliderdialate = QtWidgets.QSlider(self.centralwidget)
+        self.sliderdialate.setFocusPolicy(Qt.StrongFocus)
+        self.sliderdialate.setGeometry(QtCore.QRect(470,680,100,50))
+        self.sliderdialate.setOrientation(QtCore.Qt.Horizontal)
+        self.sliderdialate.setTickPosition(QSlider.TicksBothSides)
+        self.sliderdialate.setTickInterval(20)
+        self.sliderdialate.setSingleStep(5)
+        self.sliderdialate.valueChanged.connect(self.changeDialate)
+
+        self.labeldialate = QtWidgets.QLabel(self.centralwidget)
+        self.labeldialate.setGeometry(QtCore.QRect(470, 645, 90, 30))
+        self.labeldialate.setFont(font)
+        self.labeldialate.setTextFormat(QtCore.Qt.AutoText)
+        self.labeldialate.setObjectName("label")
+        self.labeldialate.setText("Dialate:")
+
+
+        self.sliderkmeans = QtWidgets.QSlider(self.centralwidget)
+        self.sliderkmeans.setFocusPolicy(Qt.StrongFocus)
+        self.sliderkmeans.setGeometry(QtCore.QRect(600,680,100,50))
+        self.sliderkmeans.setOrientation(QtCore.Qt.Horizontal)
+        self.sliderkmeans.setTickPosition(QSlider.TicksBothSides)
+        self.sliderkmeans.setTickInterval(20)
+        self.sliderkmeans.setSingleStep(5)
+        self.sliderkmeans.setValue(100)
+        self.sliderkmeans.valueChanged.connect(self.changeK)
+
+        self.labelK = QtWidgets.QLabel(self.centralwidget)
+        self.labelK.setGeometry(QtCore.QRect(600, 645, 90, 30))
+        self.labelK.setFont(font)
+        self.labelK.setTextFormat(QtCore.Qt.AutoText)
+        self.labelK.setObjectName("label")
+        self.labelK.setText("K(Kmeans):")
+
+        # self.layout4=QVBoxLayout()
+        # self.layout4.setGeometry(QtCore.QRect(170,650,100,50))
+        # self.layout4.addWidget(self.slidererode)
+        # self.layout4.addWidget(self.sliderdialate)
+        # self.layout4.addWidget(self.sliderkmeans)
+
+        #----------------------------------------------------------------------------------------------
+
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(170, 440, 151, 51))
         font = QtGui.QFont()
@@ -107,8 +170,6 @@ class Ui_MainWindow(QWidget):
         self.text_label2.setAlignment(QtCore.Qt.AlignCenter)
 
         #----------------------------------------------------------------------------------------------
-
-
         self.upBtn = QtWidgets.QPushButton(self.centralwidget)
         self.upBtn.setGeometry(QtCore.QRect(510, 449, 25, 50))
         font = QtGui.QFont()
@@ -186,7 +247,7 @@ class Ui_MainWindow(QWidget):
         self.pushButton2.clicked.connect(self.speechButtonCliked)
         # self.menubar.setGeometry(QtCore.QRect(0, 0, 1034, 43))
         # self.menubar.setObjectName("menubar")
-        #self.setMenuBar(self.menubar)
+        # self.setMenuBar(self.menubar)
 
         self.changemodelLabel = QtWidgets.QPushButton(self.centralwidget)
         self.changemodelLabel.setGeometry(QtCore.QRect(150, 600, 150, 40))
@@ -218,6 +279,16 @@ class Ui_MainWindow(QWidget):
         self.thread1.change_pixmap_signal2.connect(self.update_image2)
         self.thread1.start()
         QtCore.QMetaObject.connectSlotsByName(self)
+    
+    def changeErode(self,value):
+        handDetect.erode(value//10)
+    
+    def changeDialate(self,value):
+        handDetect.dialate(value//10)
+    
+    def changeK(self,value):
+        handDetect.kmeans(value+2)
+        
 
     def up(self,event):
         handDetect.move(u=True)

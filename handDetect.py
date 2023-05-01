@@ -6,7 +6,7 @@ import math
 from model import ResNet9,to_device,get_default_device,predict_image,selectModel
 import torch
 import torchvision.transforms as tt
-import mediapipe as mp
+# import mediapipe as mp
 import os
 from PyQt5.QtWidgets import *
 import torchvision.models as models
@@ -61,7 +61,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
     minValue = 70
     cap = cv2.VideoCapture(0)
-    detector = HandDetector(maxHands=1)
+    #detector = HandDetector(maxHands=1)
  
     fixed=True
     offset=20
@@ -70,12 +70,12 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
         try: 
             success, img = cap.read()
             imgOutput = img.copy()
-            hands, img = detector.findHands(img)
-            if hands:
-                hand = hands[0]
+            #hands, img = detector.findHands(img)
+            if True:
+                #hand = hands[0]
                 
-                if not fixed:
-                    x, y, w, h = hand['bbox']
+                # if not fixed:
+                #     x, y, w, h = hand['bbox']
 
                 if(w<250):
                     w=250

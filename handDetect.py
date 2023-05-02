@@ -64,10 +64,10 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
         in_features = model._modules['classifier'][-1].in_features
         model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
         model = to_device(model, device)
-        model.load_state_dict(torch.load("..\\models\\MobileNet_V2Indian70img.pth",map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(os.path.join("..","models","MobileNet_V2Indian70img.pth"),map_location=torch.device('cpu')))
         model.eval()
     else:
-        model.load_state_dict(torch.load("..\\models\\MobileNet_V2ASLEroded.pth",map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(os.path.join("..","models","MobileNet_V2ASLEroded.pth"),map_location=torch.device('cpu')))
         model.eval()
 
     pred=[]

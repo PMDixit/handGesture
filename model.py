@@ -22,10 +22,10 @@ from PIL import Image
 def selectModel(model):
     global data_dir,target_num
     if(model=="Indian"):
-        data_dir="..\\datasets\\data1\\train"
+        data_dir=os.path.join("..","datasets","data1","train")
         target_num=36
     if(model=="American"):
-        data_dir="..\\datasets\\segmentedImage"
+        data_dir=os.path.join("..","datasets","segmentedImage")
         target_num=28
     TrainClass()
     

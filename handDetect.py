@@ -53,6 +53,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     selectModel(mod)
     target_num=28
     device = get_default_device()
+    # model=ResNet9(3,target_num)
     model = models.mobilenet_v2()
     in_features = model._modules['classifier'][-1].in_features
     model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
@@ -67,7 +68,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
         model.load_state_dict(torch.load(os.path.join("..","models","MobileNet_V2Indian70img.pth"),map_location=torch.device('cpu')))
         model.eval()
     else:
-        model.load_state_dict(torch.load(os.path.join("..","models","MobileNet_V2ASLEroded.pth"),map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(os.path.join("..","models","MobileNet_V2ASLNotEroded.pth"),map_location=torch.device('cpu')))
         model.eval()
 
     pred=[]

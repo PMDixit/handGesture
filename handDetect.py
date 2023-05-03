@@ -75,9 +75,6 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     kernel1 = np.ones((2,2),np.uint8)
     minValue = 70
     cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 224)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 224)
-    cap.set(cv2.CAP_PROP_FPS, 36)
     detector = HandDetector(maxHands=1)
  
     fixed=True

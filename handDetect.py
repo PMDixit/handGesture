@@ -162,6 +162,5 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
 
                 #showing original image with box
                 change_pixmap_signal1.emit(imgOutput)
-            cv2.waitKey(1)
         except Exception as e: 
             print("Exception Occured: ",e)

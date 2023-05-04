@@ -5,6 +5,7 @@ import torchvision.transforms as tt
 
 def selectModel(model):
     global data_dir,target_num
+    #selecting the dataset
     if(model=="Indian"):
         data_dir=os.path.join("..","datasets","data1","train")
         target_num=36
@@ -12,16 +13,14 @@ def selectModel(model):
         data_dir=os.path.join("..","datasets","segmentedImage")
         target_num=28
     TrainClass()
-    
-#-------------------------------------------------------------------
+
 def TrainClass():
+    #creationg the image label pair
     train_tfms = tt.Compose([tt.ToTensor()])
     global train_data
     train_data = ImageFolder(data_dir, transform=train_tfms)
-    #--------------------------------------------------------------------
     global device 
     device= get_default_device()
-    #--------------------------------------------------------------------
 
 #for computing check
 def get_default_device():
@@ -53,7 +52,7 @@ class DeviceDataLoader():
         """Number of batches"""
         return len(self.dl)
 
-#------------------------------------------------------------------------------------------------
+#function for predicting the label
 def predict_image(img, model):
     # Convert to a batch of 1
     xb = to_device(img.unsqueeze(0), device)

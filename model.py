@@ -7,10 +7,10 @@ def selectModel(model):
     global data_dir,target_num
     #selecting the dataset
     if(model=="Indian"):
-        data_dir=os.path.join("..","datasets","data1","train")
+        data_dir=os.path.join("datasets","indian")
         target_num=36
     if(model=="American"):
-        data_dir=os.path.join("..","datasets","segmentedImage")
+        data_dir=os.path.join("datasets","american")
         target_num=28
     TrainClass()
 

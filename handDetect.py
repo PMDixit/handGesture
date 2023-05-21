@@ -103,20 +103,16 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
             else:
                 raise Exception("Camera Not Found")
             #finding the hand in frame
-            hands, img = detector.findHands(img)
+            #hands, img = detector.findHands(img)
             
-            if hands:
-                hand = hands[0]
+            if True:
+                #hand = hands[0]
                 
-                if not fixed:
-                    #extracting position of the hand box
-                    x, y, w, h = hand['bbox']
 
                 #not letting box to go size below 250x250
-                if(w<250):
-                    w=250
-                if(h<250):
-                    h=250
+                
+                w=250
+                h=250
                 #from the big image captured by cv2 extracting Rigion of interest(i,e image inside the box)
                 imgCrop = imgOutput[y - offset:y + h + offset, x - offset-50:x + w + offset]
                 aspectRatio = h / w

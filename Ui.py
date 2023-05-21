@@ -96,7 +96,7 @@ class Ui_MainWindow(QWidget):
         self.labeldialate.setFont(font)
         self.labeldialate.setTextFormat(QtCore.Qt.AutoText)
         self.labeldialate.setObjectName("label")
-        self.labeldialate.setText("Dialate:")
+        self.labeldialate.setText("Dilate:")
 
 
         self.sliderkmeans = QtWidgets.QSlider(self.centralwidget)

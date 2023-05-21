@@ -94,9 +94,6 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     minValue = 70
     #initializing cv2 and hand detector from cvzone(which uses mediapipe in background)
     cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 224)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 224)
-    cap.set(cv2.CAP_PROP_FPS, 32)
     fixed=True
     offset=20
     imgSize=400

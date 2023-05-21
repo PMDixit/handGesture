@@ -9,6 +9,8 @@ import math
 from PyQt5.QtWidgets import *
 import torchvision.models as models
 import torch.nn as nn
+
+torch.backends.quantized.engine = 'qnnpack'
 run_flag = True
 x,y,w,h=275,30,250,250
 fixed=False
@@ -61,7 +63,8 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     #searching for gpu or else cpu
     device = get_default_device()
     #defining our mobilenet model
-    model = models.mobilenet_v2()
+    model = models.quantization.mobilenet_v2(quantize=True)
+    model = torch.jit.script(model)
     #finetuning the model for our dataset
     in_features = model._modules['classifier'][-1].in_features
     model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
@@ -71,7 +74,8 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     if mod=="Indian":
         target_num=36
         device = get_default_device()
-        model = models.mobilenet_v2()
+        model = models.quantization.mobilenet_v2(quantize=True)
+        model = torch.jit.script(model)
         in_features = model._modules['classifier'][-1].in_features
         model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
         model = to_device(model, device)
@@ -88,8 +92,9 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     minValue = 70
     #initializing cv2 and hand detector from cvzone(which uses mediapipe in background)
     cap = cv2.VideoCapture(0)
-    detector = HandDetector(maxHands=1)
- 
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 224)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 224)
+    cap.set(cv2.CAP_PROP_FPS, 32)
     fixed=True
     offset=20
     imgSize=400

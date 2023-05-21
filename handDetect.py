@@ -160,11 +160,11 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     #converting to tensor as pytorch model requires it
                     imgtensor= transform(res)
                     #predicting the label
-                    predicted=predict_image(imgtensor, model)
+                    #predicted=predict_image(imgtensor, model)
                     #setting Predicted: on GUI
-                    tl1.setText(predicted)
+                    #tl1.setText(predicted)
                     #appending the label to the list to form sentence
-                    pred.append(predicted)
+                    #pred.append(predicted)
                 else:
                     raise Exception("Keep Hand bit far")
                     

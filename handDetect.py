@@ -10,7 +10,8 @@ from PyQt5.QtWidgets import *
 import torchvision.models as models
 import torch.nn as nn
 
-torch.backends.quantized.engine = 'qnnpack'
+#torch.backends.quantized.engine = 'qnnpack'
+torch.set_num_threads(1)
 run_flag = True
 x,y,w,h=275,30,250,250
 fixed=False
@@ -66,7 +67,8 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     model = models.mobilenet_v2(pretrained=False)
     in_features = model._modules['classifier'][-1].in_features
     model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
-    model= torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+    model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+    print(model)
     #finetuning the model for our dataset
     #specifieng where to run the model
     model = to_device(model, device)
@@ -79,7 +81,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
         model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
         model = to_device(model, device)
         model.load_state_dict(torch.load(os.path.join("models","MobileNet_V2Indian70img.pth"),map_location=torch.device('cpu')))
-        model= torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+        model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
         model.eval()
     #else model for american is selected
     else:

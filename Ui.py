@@ -304,8 +304,8 @@ class Ui_MainWindow(QWidget):
 
     def speechButtonCliked(self,event):
         t1 = gtts.gTTS(self.text_label2.text())
-        t1.save("temp\\welcome.mp3")   
-        playsound("temp\\welcome.mp3") 
+        t1.save(os.path.join("temp","welcome.mp3"))  
+        playsound(os.path.join("temp","welcome.mp3"))
     
     def clearOnceButtonCliked(self,event):
         word=self.text_label2.text()

@@ -11,7 +11,7 @@ import torchvision.models as models
 import torch.nn as nn
 
 torch.backends.quantized.engine = 'qnnpack'
-torch.set_num_threads(4)
+torch.set_num_threads(1)
 run_flag = True
 x,y,w,h=275,30,250,250
 fixed=False

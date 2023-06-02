@@ -327,12 +327,13 @@ class Ui_MainWindow(QWidget):
         t1 = gtts.gTTS(self.text_label2.text())
         t1.save(os.path.join("temp","welcome.mp3")) 
         try: 
-            pygame.mixer.init()
-            pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy(): # check if the file is playing
-                pass
-            pygame.mixer.quit()
+            # pygame.mixer.init()
+            # pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))
+            # pygame.mixer.music.play()
+            # while pygame.mixer.music.get_busy(): # check if the file is playing
+            #     pass
+            # pygame.mixer.quit()
+            os.system("python3 play.py")
         except:
             pass
         os.remove(os.path.join("temp","welcome.mp3"))

@@ -10,6 +10,7 @@ import handDetect
 import gtts  
 from playsound import playsound 
 import os
+import threading
 import pygame
 class VideoThread(QThread):
     change_pixmap_signal1 = pyqtSignal(np.ndarray)
@@ -260,6 +261,9 @@ class Ui_MainWindow(QWidget):
         self.thread1.change_pixmap_signal2.connect(self.update_image2)
         self.thread1.start()
         QtCore.QMetaObject.connectSlotsByName(self)
+        thread=threading.Thread(target=self.speechButtonCliked)
+        thread.start()
+        thread.join()
     
     def changeErode(self,value):
         handDetect.erode(value//10)
@@ -302,11 +306,6 @@ class Ui_MainWindow(QWidget):
             self.thread1.changeModel(self.changemodelLabel.text())
             self.changemodelLabel.setText("American")
             self.model="American"
-
-    # def speechButtonCliked(self,event):
-    #     t1 = gtts.gTTS(self.text_label2.text())
-    #     t1.save(os.path.join("temp","welcome.mp3"))  
-    #     playsound(os.path.join("temp","welcome.mp3"))
     
     def clearOnceButtonCliked(self,event):
         word=self.text_label2.text()
@@ -327,13 +326,12 @@ class Ui_MainWindow(QWidget):
         t1 = gtts.gTTS(self.text_label2.text())
         t1.save(os.path.join("temp","welcome.mp3")) 
         try: 
-            # pygame.mixer.init()
-            # pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))
-            # pygame.mixer.music.play()
-            # while pygame.mixer.music.get_busy(): # check if the file is playing
-            #     pass
-            # pygame.mixer.quit()
-            os.system("python3 play.py")
+            pygame.mixer.init()
+            pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy(): # check if the file is playing
+                pass
+            pygame.mixer.quit()
         except:
             pass
         os.remove(os.path.join("temp","welcome.mp3"))

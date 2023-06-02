@@ -10,6 +10,7 @@ import handDetect
 import gtts  
 from playsound import playsound 
 import os
+import pygame
 class VideoThread(QThread):
     change_pixmap_signal1 = pyqtSignal(np.ndarray)
     change_pixmap_signal2 = pyqtSignal(np.ndarray)
@@ -326,10 +327,15 @@ class Ui_MainWindow(QWidget):
         t1 = gtts.gTTS(self.text_label2.text())
         t1.save(os.path.join("temp","welcome.mp3")) 
         try: 
-            playsound(os.path.join("temp","welcome.mp3"))
-            os.remove(os.path.join("temp","welcome.mp3"))
+            pygame.mixer.init()
+            pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy(): # check if the file is playing
+                pass
+            pygame.mixer.quit()
         except:
             pass
+        os.remove(os.path.join("temp","welcome.mp3"))
     
     def convert_cv_qt(self, cv_img,disply_width,display_height):
         """Convert from an opencv image to QPixmap"""

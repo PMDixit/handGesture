@@ -18,6 +18,7 @@ fixed=False
 iterations1=1
 iterations2=1
 km=128
+hand=True
 #function for stoping recognition
 def setFlag():
     global run_flag
@@ -25,7 +26,7 @@ def setFlag():
 
 #function for moving the box manually
 def move(u=False,d=False,l=False,r=False,auto=False):
-    global x,y,fixed
+    global x,y,hand
     move=10
     if u:
         y=y-move
@@ -36,7 +37,7 @@ def move(u=False,d=False,l=False,r=False,auto=False):
     if r:
         x=x+move
     if auto:
-        fixed= not fixed
+        hand= not hand
 
 #function for setting erosion, dialations and k for kmeans 
 def erode(it):
@@ -57,6 +58,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
     global run_flag
     global fixed,iterations1,iterations2
     global km
+    global hand
     run_flag=True
     #clalling model.py select model for dataset selection.
     selectModel(mod)
@@ -111,7 +113,7 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
             #finding the hand in frame
             #hands, img = detector.findHands(img)
             
-            if True:
+            if hand:
                 #hand = hands[0]
                 
 

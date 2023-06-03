@@ -173,8 +173,8 @@ def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
                     raise Exception("Keep Hand bit far")
                     
                 #if in last 30 images(frames) 28 predicted labels are same then add that label to sentence
-                if len(pred)>=30:
-                    if pred.count(max(set(pred), key = pred.count))>28:
+                if len(pred)>=14:
+                    if pred.count(max(set(pred), key = pred.count))>13:
                         if max(set(pred), key = pred.count) =="Nothing":
                             tl1.setText("Place Hand in box")
                         elif max(set(pred), key = pred.count) =="Space":

@@ -323,7 +323,7 @@ class Ui_MainWindow(QWidget):
         t1.save(os.path.join("temp","welcome.mp3")) 
         try: 
             from subprocess import call
-            cmd = ["mplayer", "-ao", "alsa:device=bluetooth", "/nums/32.wav"]
+            cmd = ["mplayer", "-ao", "alsa:device=bluetooth", "/temp/welcome.mp3"]
             call(cmd)
             # pygame.mixer.init()
             # pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))

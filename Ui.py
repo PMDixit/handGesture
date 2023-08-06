@@ -325,7 +325,7 @@ class Ui_MainWindow(QWidget):
             # from subprocess import call
             # cmd = ["mplayer", "-ao", "alsa:device=bluetooth", os.path.join("temp","welcome.mp3")]
             # call(cmd)
-            pygame.mixer.init()
+            pygame.mixer.init(devicename='bluealsa:DEV=08:EB:ED:72:CB:D0')
             pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))
             pygame.mixer.music.play()
 

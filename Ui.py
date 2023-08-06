@@ -322,14 +322,13 @@ class Ui_MainWindow(QWidget):
         t1 = gtts.gTTS(self.text_label2.text())
         t1.save(os.path.join("temp","welcome.mp3")) 
         try: 
+            from subprocess import call
+            cmd = ["mplayer", "-ao", "alsa:device=bluetooth", "/nums/32.wav"]
+            call(cmd)
             # pygame.mixer.init()
             # pygame.mixer.music.load(os.path.join("temp","welcome.mp3"))
             # pygame.mixer.music.play()
-            pygame.mixer.init()
-            pygame.init()
-            sound= pygame.mixer.Sound(os.path.join("temp","welcome.mp3"))
-            sound.play()
-            pygame.time.wait(int(sound.get_length() * 1000))
+
             # while pygame.mixer.music.get_busy(): # check if the file is playing
             #     pass
             pygame.mixer.quit()

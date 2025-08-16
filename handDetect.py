@@ -1,149 +1,198 @@
 import cv2
-from cvzone.HandTrackingModule import HandDetector
-from cvzone.ClassificationModule import Classifier
 import numpy as np
-import math
-from model import ResNet9,to_device,get_default_device,predict_image
+from cvzone.HandTrackingModule import HandDetector
+from model import to_device,get_default_device,predict_image,selectModel
 import torch
 import torchvision.transforms as tt
-import mediapipe as mp
 import os
-def fun(change_pixmap_signal1,change_pixmap_signal2,run_flag,tl1,tl2):
-    mp_drawing = mp.solutions.drawing_utils
-    mp_selfie_segmentation = mp.solutions.selfie_segmentation
+import math
+from PyQt5.QtWidgets import *
+import torchvision.models as models
+import torch.nn as nn
+
+torch.backends.quantized.engine = 'qnnpack'
+torch.set_num_threads(1)
+run_flag = True
+x,y,w,h=275,30,250,250
+fixed=False
+iterations1=1
+iterations2=1
+km=128
+hand=True
+#function for stoping recognition
+def setFlag():
+    global run_flag
+    run_flag=False
+
+#function for moving the box manually
+def move(u=False,d=False,l=False,r=False,auto=False):
+    global x,y,hand
+    move=10
+    if u:
+        y=y-move
+    if d:
+        y=y+move
+    if l:
+        x=x-move
+    if r:
+        x=x+move
+    if auto:
+        hand= not hand
+
+#function for setting erosion, dialations and k for kmeans 
+def erode(it):
+    global iterations1
+    iterations1=it
+
+def dialate(it):
+    global iterations2
+    iterations2=it
+
+def kmeans(k):
+    global km
+    km=k
+
+#Main function for hand detection and classification
+def detect(change_pixmap_signal1,change_pixmap_signal2,tl1,tl2,mod="Indian"):
+    global x,y,w,h
+    global run_flag
+    global fixed,iterations1,iterations2
+    global km
+    global hand
+    run_flag=True
+    #clalling model.py select model for dataset selection.
+    selectModel(mod)
+    #defining our mobilenet model
+    #finetuning the model for our dataset
+    #specifieng where to run the model
+    #if indian is selected model for indian classification is selected
+    if mod=="Indian":
+        target_num=36
+        device = get_default_device()
+        model = models.mobilenet_v2(pretrained=False)
+        in_features = model._modules['classifier'][-1].in_features
+        model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
+        model = to_device(model, device)
+        model.load_state_dict(torch.load(os.path.join("models","MobileNet_V2Indian70img.pth"),map_location=torch.device('cpu')))
+        model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+        model = torch.jit.script(model)
+        model.eval()
+    #else model for american is selected
+    else:
+        target_num=28
+        #searching for gpu or else cpu
+        device = get_default_device()
+        model = models.mobilenet_v2(pretrained=False)
+        in_features = model._modules['classifier'][-1].in_features
+        model._modules['classifier'][-1] = nn.Linear(in_features, target_num, bias=True)
+        model = to_device(model, device)
+        model.load_state_dict(torch.load(os.path.join("models","MobileNet_V2ASLNotEroded.pth"),map_location=torch.device('cpu')))
+        model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+        model = torch.jit.script(model)
+        model.eval()
+        
+
     pred=[]
-
-
-    # def SegmentNorm(img):
-    #     BG_COLOR = (0,0,0)
-    #     with mp_selfie_segmentation.SelfieSegmentation(
-    #         model_selection=0) as selfie_segmentation:
-    #         image = img
-    #         results = selfie_segmentation.process(image)
-    #         condition = np.stack((results.segmentation_mask,) * 3, axis=-1) > 0.2
-    #         bg_image = np.zeros(image.shape, dtype=np.uint8)
-    #         bg_image[:] = BG_COLOR
-    #         imgbremoved= np.where(condition, image, bg_image)
-
-    #         transform = tt.ToTensor()
-    #         imgbremoved= transform(imgbremoved)
-
-    #         mean=imgbremoved.mean([1,2])
-    #         std=imgbremoved.std([1,2])
-    #         stats=(mean,std)
-    #         transform = tt.Compose([tt.Normalize(*stats)])
-    #         imgbremoved=transform(imgbremoved)
-    #     return imgbremoved
-
     transform = tt.Compose([tt.ToTensor(),tt.Resize(size=(128,128))])
-
-    target_num=28
-    device = get_default_device()
-    model=ResNet9(3,28)
-    model = to_device(ResNet9(3, target_num), device)
-    model.load_state_dict(torch.load("..\\models\\ISN-4-FullGaussianMorph1500min50-custom-resnet.pth",map_location=torch.device('cpu')))
-    model.eval()
-    minValue = 50
-
+    kernel1 = np.ones((2,2),np.uint8)
+    minValue = 70
+    #initializing cv2 and hand detector from cvzone(which uses mediapipe in background)
     cap = cv2.VideoCapture(0)
-    detector = HandDetector(maxHands=1)
-
+    fixed=True
     offset=20
-    imgSize = 400
+    imgSize=400
+    #till we close the application
     while run_flag:
         try: 
+            #reading the frame
             success, img = cap.read()
-            imgOutput = img.copy()
-            hands, img = detector.findHands(img)
-            if hands:
-                hand = hands[0]
-                x, y, w, h = hand['bbox']
-                if(w<250):
-                    w=250
-                if(h<250):
-                    h=250
-                imgWhite = np.ones((imgSize, imgSize, 3), np.uint8)
+            if success:
+                imgOutput = img.copy()
+            else:
+                raise Exception("Camera Not Found")
+            #finding the hand in frame
+            #hands, img = detector.findHands(img)
+            
+            if hand:
+                #hand = hands[0]
+                
+
+                #not letting box to go size below 250x250
+                
+                w=250
+                h=250
+                #from the big image captured by cv2 extracting Rigion of interest(i,e image inside the box)
                 imgCrop = imgOutput[y - offset:y + h + offset, x - offset-50:x + w + offset]
-
-                imgCropShape = imgCrop.shape
-
                 aspectRatio = h / w
 
-                if aspectRatio > 1:
-                    k = imgSize / h
-                    wCal = math.ceil(k * w)
-                    imgResize = cv2.resize(imgCrop, (wCal, imgSize))
-                    imgResizeShape = imgResize.shape
-                    wGap = math.ceil((imgSize - wCal) / 2)
-                    imgWhite[:, wGap:wCal + wGap] = imgResize
-
-                    gray = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2GRAY)
+                if aspectRatio <= 1:
+                    img=imgCrop
+                    #img=cv2.addWeighted(img, 1,img,2,-10)
+                    if(km<101):
+                        #kmeans requires float32 datatype
+                        img=np.float32(img)
+                        #criteria
+                        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.85) #criteria
+                        retval, labels, centers = cv2.kmeans(img, km, None, criteria, 3, cv2.KMEANS_RANDOM_CENTERS) #3 iterations
+                        # convert data into 8-bit values
+                        centers = np.uint8(centers)  
+                        # Mapping labels to center points( RGB Value)
+                        segmented_data = centers[labels.flatten()] 
+                        #reshaping to original form
+                        img = segmented_data.reshape((img.shape))
+                    try:
+                        #grayscale conversion 
+                        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                    except:
+                        raise Exception("Outside of frame")
+                    #gaussian bluring the grayscale image
                     blur = cv2.GaussianBlur(gray,(5,5),2)
+
+                    #getting the threshold value and applying thresholding
                     th3 = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,11,2)
                     ret, res = cv2.threshold(th3, minValue, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
 
-                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+                    #morphological operations open close dialate erode are appled
+                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2)) #2x2 kernal size
                     res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
                     res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
-
-                    imgtensor= transform(res)
-                    predicted=predict_image(imgtensor, model)
-                    tl1.setText(predicted)
-                    pred.append(predicted)
-                    if len(pred)>=50:
-                        if pred.count(max(set(pred), key = pred.count))>35:
-                            tl2.setText(tl2.text()+max(set(pred), key = pred.count))
-                            pred.clear()
-                        else:
-                            pred.clear()
-                    
-
-                else:
-                    k = imgSize / w
-                    hCal = math.ceil(k * h)
-                    imgResize = cv2.resize(imgCrop, (imgSize, hCal))
-                    imgResizeShape = imgResize.shape
-                    hGap = math.ceil((imgSize - hCal) / 2)
-                    imgWhite[hGap:hCal + hGap, :] = imgResize
-
-                    gray = cv2.cvtColor(imgWhite, cv2.COLOR_BGR2GRAY)
-                    blur = cv2.GaussianBlur(gray,(5,5),2)
-
-                    th3 = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,11,2)
-                    ret, res = cv2.threshold(th3, minValue, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-
-                    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
-                    res = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
-                    res = cv2.morphologyEx(res, cv2.MORPH_CLOSE, kernel)
-
-                    # kernel = np.zeros((3,3), np.uint8) 
-                    # # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(res, kernel, iterations=5) 
-
-                    # kernel = np.ones((1,1), np.uint8) 
-                    # img_erosion = cv2.erode(res, kernel, iterations=2) 
-                    # res = cv2.dilate(img_erosion, kernel, iterations=5) 
-
                     res= cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
-                    imgtensor= transform(res)
-                    predicted=predict_image(imgtensor, model)
-                    tl1.setText(predicted)
-                    pred.append(predicted)
-                    if len(pred)>=50:
-                        if pred.count(max(set(pred), key = pred.count))>35:
-                            tl2.setText(tl2.text()+max(set(pred), key = pred.count))
-                            pred.clear()
-                        else:
-                            pred.clear()
                     
+                    res = cv2.dilate(res,kernel1,iterations=iterations2)
+                    res = cv2.erode(res,kernel1,iterations=iterations1)
 
-                # crop= imgseg.permute(1,2,0).cpu().detach().numpy()
+                    #converting to tensor as pytorch model requires it
+                    imgtensor= transform(res)
+                    #predicting the label
+                    predicted=predict_image(imgtensor, model)
+                    #setting Predicted: on GUI
+                    tl1.setText(predicted)
+                    #appending the label to the list to form sentence
+                    pred.append(predicted)
+                else:
+                    raise Exception("Keep Hand bit far")
                     
+                #if in last 30 images(frames) 28 predicted labels are same then add that label to sentence
+                if len(pred)>=14:
+                    if pred.count(max(set(pred), key = pred.count))>13:
+                        if max(set(pred), key = pred.count) =="Nothing":
+                            tl1.setText("Place Hand in box")
+                        elif max(set(pred), key = pred.count) =="Space":
+                            tl2.setText(tl2.text()+" ")
+                        else:
+                            tl2.setText(tl2.text()+max(set(pred), key = pred.count))
+                            
+                        pred.clear()
+                    else:
+                        pred.clear()
+                
+                #showing preprocessed image
                 change_pixmap_signal2.emit(res)
+                #Drawing Square Box 
                 cv2.rectangle(imgOutput, (x-offset-50, y-offset),
                             (x + w+offset, y + h+offset), (255, 0, 255), 4)
-            
+
+                #showing original image with box
                 change_pixmap_signal1.emit(imgOutput)
-            cv2.waitKey(1)
-        except: 
-            pass
+        except Exception as e: 
+            print("Exception Occured: ",e)
